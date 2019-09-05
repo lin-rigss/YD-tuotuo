@@ -1,0 +1,91 @@
+@bac:#EEEEEE;
+@bor:#DCDCDC;
+
+@f_m_M:"MicrosoftYaHeiUi";
+@f_m_L:"MicrosoftYaHeiUILight";
+@f_m_n:"NSimSun";
+
+@bla:#000;
+@red:#EA5512;
+
+
+@f_c_b:#BBBBBB;
+@f_c_2:#231815;
+@f_c_7:#797979;
+@f_c_e:#EA5512;
+@f_c_f:#FDBFB5;
+@f_c_3:#362822;
+@f_c_6:#626262;
+
+// 覆盖vux的默认样式
+
+.text_title(@color:@f_c_2;@font_size:38px){
+  font-size: @font_size;
+  color: @color;
+  font-weight: 400;
+  text-align: center;
+}
+.vux-popup-header {  // 省市区的header
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  height: 88px;
+  line-height: 88px;
+  font-size: 32px;
+  background-color: #fbf9fe;
+}
+.weui-toast__content{
+  font-size: 28px;
+}
+.weui-toast{
+  box-sizing: border-box;
+  padding-top: 20px;
+}
+/*
+覆盖alert样式
+*/ 
+.weui-dialog{
+  widows: 70%;
+  max-width: 70%;
+  .weui-dialog__title{
+    font-size: 36px;
+  }
+  .weui-dialog__bd{
+    font-size: 34px;
+  }
+  .weui-dialog__btn{
+    font-size: 36px;
+    height: 90px;
+    line-height: 90px;
+    color: @f_c_e;
+  }
+}
+
+//覆盖loading样式
+.weui-toast{
+  top: 40%;
+}
+.weui-icon_toast.weui-loading{
+  width: 60px;
+  height: 60px;
+}
+
+.weui-loading{
+  width: 50px !important;
+  height: 50px !important;
+}
+
+.clearfix {
+  &:after {
+    visibility: hidden;
+    display: block;
+    font-size: 0;
+    content: " ";
+    clear: both;
+    height: 0;
+  }
+}
+
+
+
+

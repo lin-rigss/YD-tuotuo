@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+  <title>妥妥运车</title>
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?6668a6de848ab53bb338d55531160c9b";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+    </script>
+</head>
+
+<body>
+  <div id="app-box"></div>
+  <!-- built files will be auto injected -->
+</body>
+<script>
+  var system = {
+    win: false,
+    mac: false,
+    xll: false,
+    ipad: false
+  };
+  //检测平台
+  var p = navigator.platform;
+  system.win = p.indexOf("Win") == 0;
+  system.mac = p.indexOf("Mac") == 0;
+  system.x11 = (p == "X11") || (p.indexOf("Linux") == 0);
+  system.ipad = (navigator.userAgent.match(/iPad/i) != null) ? true : false; //跳转语句，如果是手机访问就自动跳转到wap.baidu.com页面
+  if (system.win || system.mac || system.xll || system.ipad) {   //web端
+    // window.location.href = 'https://faysunshine.com/tuotuo/web'
+  }
+
+</script>
+
+</html>
