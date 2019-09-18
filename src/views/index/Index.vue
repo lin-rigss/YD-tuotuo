@@ -143,12 +143,7 @@
             ></span>
         </x-input>
       </group>
-
     </div>
-
-
-
-
 
     <div class="five_step">
       <h3>妥妥运车，只需<span>5</span>步</h3>
@@ -514,6 +509,44 @@ export default {
       //);
       //                  从级联选择器中获取选中项的显示文本
       // fields['brandId'] = getCascaderSelectedName(this.carStyle, fields.brandId)
+
+
+      if (!/^1[34578]\d{9}$/.test(this.phoneValue)) {
+          this.$vux.alert.show({
+              title: "提示",
+              "button-text": "知道了",
+              content: "请输入正确的手机号",
+              onHide() {}
+          });
+          return false;
+      }
+      if (this.value == '') {
+          this.$vux.alert.show({
+              title: "提示",
+              "button-text": "知道了",
+              content: "请选择始发地",
+              onHide() {}
+          });
+          return false;
+      }
+      if (this.dvalue == '') {
+          this.$vux.alert.show({
+              title: "提示",
+              "button-text": "知道了",
+              content: "请选择目的地",
+              onHide() {}
+          });
+          return false;
+      }
+        if (this.extractCount == '') {
+          this.$vux.alert.show({
+              title: "提示",
+              "button-text": "知道了",
+              content: "请输入运车数量",
+              onHide() {}
+          });
+          return false;
+      }
 
 
       let params = {
