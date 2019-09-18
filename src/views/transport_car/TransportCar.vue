@@ -4,34 +4,41 @@
       快速下单
     </h3>
     <group>
-      <x-address
-        title="始发地"
-        :list='addressList'
-        placeholder="请选择始发地"
-        value-text-align='right'
-        v-model="submitParams.departurePlace.value"
-      ></x-address>
-      <x-address
-        title="目的地"
-        :list='addressList'
-        placeholder="请选择目的地"
-        value-text-align='right'
-        v-model="submitParams.destination.value"
-      ></x-address>
-      <popup-picker
-        title="车&nbsp;&nbsp;&nbsp;型"
-        value-text-align='right'
-        :data='carStyle'
-        placeholder="请选择车型"
-        show-name
-        :fixed-columns="2"
-        :columns=2
-        v-model='submitParams.brandId.value'
-      ></popup-picker>
-
+       <van-field
+            readonly
+            clickable
+            label="始发地"
+            :value="value"
+            v-model="value"
+            placeholder="请选择始发地"
+            @click="showPicker = true"
+       />
     </group>
-    <group>
-      <x-input
+       <Popup v-show="showPicker" @cancel="showPicker=false" @sure="departurePlace" ref="popup"></Popup>
+    
+     <group>
+       <van-field
+            readonly
+            clickable
+            label="目的地"
+            :value="dvalue"
+            v-model="dvalue"
+            placeholder="请选择目的地"
+            @click="dshowPicker = true"
+        />
+     </group>
+        <Popup v-show="dshowPicker" @cancel="dshowPicker=false" @sure="destination" ref="popup"></Popup>
+
+     <group>
+       <van-cell-group>
+          <van-field
+            v-model="extractCount"
+            label="车数量"
+            placeholder="请输入运车数量"
+          />
+        </van-cell-group>
+
+      <!-- <x-input
         title="发车联系人"
         value-text-align='right'
         placeholder="请填写发车人姓名"
@@ -42,8 +49,24 @@
         title="手机号"
         placeholder="请填写发车手机号"
         v-model='submitParams.trafficPhone.value'
-      ></x-input>
+      ></x-input> -->
+       <van-cell-group>
+          <van-field
+            v-model="contacts"
+            label="发车联系人"
+            placeholder="请填写发车人姓名"
+          />
+        </van-cell-group>
+  
+       <van-cell-group>
+          <van-field
+            v-model="phoneValue"
+            label="手机号"
+            placeholder="请填写发车手机号"
+          />
+        </van-cell-group>
     </group>
+
     <div
       class="footerBtn"
       @click="submitForm"
@@ -54,6 +77,11 @@
   </div>
 </template>
 <script>
+
+import Vue from 'vue';
+import { Field } from 'vant';
+Vue.use(Field);
+
 import _ from "lodash";
 import { globalData, api } from "api";
 import { getCascaderSelectedName } from "utils";
@@ -64,9 +92,10 @@ import {
     XAddress,
     ChinaAddressData,
     XButton,
-    // Loading,
+    Loading,
     TransferDomDirective as TransferDom
 } from "vux";
+import Popup from './Popup';
 const { getCarStyle } = globalData;
 const { submitOrder } = api;
 export default {
@@ -79,11 +108,23 @@ export default {
         XInput,
         XAddress,
         PopupPicker,
-        XButton
+        XButton,
         // Loading
+        Popup
     },
     data() {
         return {
+             showPicker: false,
+             dshowPicker: false,
+             value:'',   // 始发地
+             valueName:'',
+             dvalue:'',  // 目的地
+             dvalueName:'',
+             extractCount:'', // 运车数量
+             phoneValue:'', // 手机号
+             contacts:'', // 联系人
+
+
             addressList: ChinaAddressData,
             carStyle: [], // 车型列表
             submitParams: {
@@ -111,24 +152,29 @@ export default {
         };
     },
     methods: {
+    // 选择始发地
+    departurePlace(city) {
+      let {name,valueName} = city
+      this.showPicker = false;
+      this.value = name;
+      this.valueName = valueName;
+      // console.log(this.value,this.valueName)
+    },
+    // 选择目的地
+    destination(city) {
+      let {name,valueName} = city
+      this.dshowPicker = false;
+      this.dvalue = name;
+      this.dvalueName = valueName;
+      // console.log(this.dvalue,this.dvalueName)
+    },
+
+
+
+
         submitForm() {
-            let params = _.cloneDeep(this.submitParams);
-            let fields = {};
-            // console.log(params.brandId.value)
-            for (let key in params) {
-                fields[key] = params[key].value;
-                if (params[key].value.length === 0) {
-                    this.$vux.toast.show({
-                        text: params[key].message,
-                        type: "text",
-                        position: "top",
-                        width: "auto"
-                    });
-                    return;
-                    break;
-                }
-            }
-            if (!/^1[34578]\d{9}$/.test(fields.trafficPhone)) {
+            
+            if (!/^1[34578]\d{9}$/.test(this.phoneValue)) {
                 this.$vux.alert.show({
                     title: "提示",
                     "button-text": "知道了",
@@ -143,70 +189,138 @@ export default {
                 content: "您确定要提交吗？",
                 onCancel() {},
                 onConfirm() {
-                    let {
-                        departurePlace,
-                        destination,
-                        brandId,
-                        ...submitParam
-                    } = fields;
-                    let brand1 = fields.brandId[1].split("-");
-                    if (brand1[1] != "kong") {
-                        fields.brandId[1] = brand1[1];
-                    } else if (brand1[1] == "kong") {
-                        fields.brandId[1] = "";
+                let params = {
+                    "extractCount":this.extractCount,
+                    "departurePlaceId":this.valueName,
+                    "destinationId": this.dvalueName,
+                    "trafficContact":this.contacts,
+                    "trafficPhone":this.phoneValue,
+                 }              
+    
+                submitOrder(params).then(res => {                
+                    if (res.success) {
+                        that.$router.push('/ordersuccess')
+                    } else {
+                        that.$vux.alert.show({
+                            title: "提示",
+                            "button-text": "知道了",
+                            content: "下订单出现错误，请重新下单",
+                            onHide() {}
+                        });
                     }
-                    submitParam.taskList = [
-                        {
-                            brandId: fields.brandId,
-                            brandName: getCascaderSelectedName(
-                                that.carStyle,
-                                that.submitParams.brandId.value,
-                                "name",
-                                "value"
-                            )
-                            // departurePlaceValue: getCascaderSelectedName(
-                            //   that.addressList,
-                            //   departurePlace
-                            // ),
-                            // departurePlaceId: departurePlace,
-                            // destinationId: destination,
-                            // destinationValue: getCascaderSelectedName(
-                            //   that.addressList,
-                            //   destination
-                            // )
-                        }
-                    ];
-                    submitParam.departurePlaceValue = getCascaderSelectedName(
-                        that.addressList,
-                        departurePlace
-                    );
-                    submitParam.destinationValue = getCascaderSelectedName(
-                        that.addressList,
-                        destination
-                    );
-                    submitParam = {
-                        ...submitParam,
-                        departurePlaceId: departurePlace,
-                        destinationId: destination
-                    };
-                    that.$vux.loading.show({
-                        text: "正在提交..."
-                    });
-                    submitOrder(submitParam).then(res => {
-                        that.$vux.loading.hide();
-                        if (res.success) {
-                            that.$router.push({ path: "/ordersuccess" });
-                        } else {
-                            that.$vux.alert.show({
-                                title: "提示",
-                                "button-text": "知道了",
-                                content: "下订单出现错误，请重新下单",
-                                onHide() {}
-                            });
-                        }
                     });
                 }
             });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            // let params = _.cloneDeep(this.submitParams);
+            //let fields = {};
+            // console.log(params.brandId.value)
+            //for (let key in params) {
+            //     fields[key] = params[key].value;
+            //     if (params[key].value.length === 0) {
+            //         this.$vux.toast.show({
+            //             text: params[key].message,
+            //             type: "text",
+            //             position: "top",
+            //             width: "auto"
+            //         });
+            //         return;
+            //         break;
+            //     }
+            // }
+            // if (!/^1[34578]\d{9}$/.test(fields.trafficPhone)) {
+            //     this.$vux.alert.show({
+            //         title: "提示",
+            //         "button-text": "知道了",
+            //         content: "请输入正确的手机号",
+            //         onHide() {}
+            //     });
+            //     return false;
+            // }
+            // let that = this;
+            // this.$vux.confirm.show({
+            //     title: "提示",
+            //     content: "您确定要提交吗？",
+            //     onCancel() {},
+            //     onConfirm() {
+            //         let {
+            //             departurePlace,
+            //             destination,
+            //             brandId,
+            //             ...submitParam
+            //         } = fields;
+            //         let brand1 = fields.brandId[1].split("-");
+            //         if (brand1[1] != "kong") {
+            //             fields.brandId[1] = brand1[1];
+            //         } else if (brand1[1] == "kong") {
+            //             fields.brandId[1] = "";
+            //         }
+            //         submitParam.taskList = [
+            //             {
+            //                 brandId: fields.brandId,
+            //                 brandName: getCascaderSelectedName(
+            //                     that.carStyle,
+            //                     that.submitParams.brandId.value,
+            //                     "name",
+            //                     "value"
+            //                 )
+            //                 // departurePlaceValue: getCascaderSelectedName(
+            //                 //   that.addressList,
+            //                 //   departurePlace
+            //                 // ),
+            //                 // departurePlaceId: departurePlace,
+            //                 // destinationId: destination,
+            //                 // destinationValue: getCascaderSelectedName(
+            //                 //   that.addressList,
+            //                 //   destination
+            //                 // )
+            //             }
+            //         ];
+            //         submitParam.departurePlaceValue = getCascaderSelectedName(
+            //             that.addressList,
+            //             departurePlace
+            //         );
+            //         submitParam.destinationValue = getCascaderSelectedName(
+            //             that.addressList,
+            //             destination
+            //         );
+            //         submitParam = {
+            //             ...submitParam,
+            //             departurePlaceId: departurePlace,
+            //             destinationId: destination
+            //         };
+            //         that.$vux.loading.show({
+            //             text: "正在提交..."
+            //         });
+            //         submitOrder(submitParam).then(res => {
+            //             that.$vux.loading.hide();
+            //             if (res.success) {
+            //                 that.$router.push({ path: "/ordersuccess" });
+            //             } else {
+            //                 that.$vux.alert.show({
+            //                     title: "提示",
+            //                     "button-text": "知道了",
+            //                     content: "下订单出现错误，请重新下单",
+            //                     onHide() {}
+            //                 });
+            //             }
+            //         });
+            //     }
+            // });
         }
     },
     mounted() {

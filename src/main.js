@@ -11,6 +11,10 @@ import {
   config
 } from './utils'
 
+import Vant from 'vant';
+import 'vant/lib/index.css';
+Vue.use(Vant);
+
 import { ToastPlugin, AlertPlugin, LoadingPlugin, ConfirmPlugin } from 'vux'
 const { bacBody } = config
 Vue.use(ToastPlugin)

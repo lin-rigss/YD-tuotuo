@@ -32,6 +32,9 @@ const getCascaderSelectedName = (data, value, name = 'name', label = 'value') =>
   }
   return departmentName
 }
+
+
+
 const getQueryString = (name, url) => {
   let href = window.location.href
   if (url) {

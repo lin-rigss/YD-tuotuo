@@ -3,7 +3,9 @@
 // const API = 'http://47.95.11.24:8101'  // 正式环境
 // const API_MOCK = 'API_MOCK'
 
-const HOST = 'tuotuoyunche.com/tuoche'// 妥妥
+//const HOST = 'tuotuoyunche.com/tuoche'// 妥妥 线上地址
+const HOST = 'http://192.168.0.114:10002'
+
 const API = 'https://' + HOST + '/order'
 const API1 = 'https://' + HOST + '/dispatch'
 const API2 = 'https://' + HOST + '/dictionary'
@@ -18,10 +20,17 @@ let config = {
   activeId: 1,
   api: {
     carStyle: `${API2}/dict/car/model?type=3`,
-    getPrice: `${API}/web_rescue_order/direction`, // 获取报价结果
-    submitorder: `${API}/web_rescue_order/webSave`, // 提交订单
+
+    //getPrice: `${API}/web_rescue_order/direction`, // 获取报价结果
+    getPrice: `${HOST}/tuoche/transportLine/cost`, // 获取报价结果   
+
+
+    // submitorder: `${API}/web_rescue_order/webSave`, // 提交订单
+    submitorder: `${HOST}/tuoche/order/save`, //下单接口
+
     newsList: `${API}/web_rescue_order/newsList`, // 新闻列表
     newsDetail: `${API}/web_rescue_order/newsContent`, // 新闻详情
+    
   }
 }
 

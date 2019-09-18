@@ -18,6 +18,10 @@ const TuoNews = r => require.ensure([], () => r(require('@/views/tuo_news/TuoNew
 const NewsDetail = r => require.ensure([], () => r(require('@/views/tuo_news/NewsDetail.vue')), 'newsDetail')
 const OrderSuccess = r => require.ensure([], () => r(require('@/views/order_success/OrderSuccess.vue')), 'OrderSuccess')
 
+
+
+
+
 let routes = [{
   path: '/',
   redirect: '/index'

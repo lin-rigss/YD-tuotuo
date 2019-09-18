@@ -37,6 +37,7 @@
       <span class="yunche"> 运车热线：</span>
       <span class="phone"> 400-877-1107 </span>
     </a>
+
     <div class="tuo_grid clearfix">
       <router-link
         tag="dl"
@@ -51,39 +52,59 @@
         <dd>{{item.text}}</dd>
       </router-link>
     </div>
-    <div class="tuo_form">
-      <group>
-        <x-address
+
+
+    
+
+    <div class="tuo_form">        
+         <!-- 原：地址列表下拉 -->
+         <!-- <x-address
           title="始发地"
           :list='addressList'
           placeholder="请选择始发地"
           value-text-align='left'
           v-model="submitParams.departurePlace.value"
-        ></x-address>
-      </group>
+        ></x-address>   -->
 
-      <group>
-        <x-address
+         <group>
+          <van-field
+            readonly
+            clickable
+            label="始发地"
+            :value="value"
+            v-model="value"
+            placeholder="请选择始发地"
+            @click="showPicker = true"
+          />
+        </group>
+
+        <Popup v-show="showPicker" @cancel="showPicker=false" @sure="departurePlace" ref="popup"></Popup>
+    
+        <!-- <x-address
           title="目的地"
           :list='addressList'
           placeholder="请选择目的地"
           value-text-align='left'
           v-model="submitParams.destination.value"
-        ></x-address>
-      </group>
-      <!-- <x-input title="手机号">
-          <span
-            slot="right"
-            class="price_lock"
-            @click="quiryPrice"
-          >
-            <img
-              src="../../assets/img/btn-inquiry.png"
-              alt=""
-            ></span>
-        </x-input> -->
+        ></x-address> -->
+
+        <group>
+         <van-field
+            readonly
+            clickable
+            label="目的地"
+            :value="dvalue"
+            v-model="dvalue"
+            placeholder="请选择目的地"
+            @click="dshowPicker = true"
+          />
+        </group>
+
+      <Popup v-show="dshowPicker" @cancel="dshowPicker=false" @sure="destination" ref="popup"></Popup>
+       
+     
       <group>
-        <popup-picker
+        <!-- <popup-picker
           title="车&nbsp;&nbsp;&nbsp;型"
           value-text-align='left'
           :data='carStyle'
@@ -93,20 +114,24 @@
           v-model='submitParams.brandId.value'
           show-name
           @on-change='carChange'
-        ></popup-picker>
+        ></popup-picker> -->
+
+        <van-cell-group>
+          <van-field
+            v-model="extractCount"
+            label="车数量"
+            placeholder="请输入运车数量"
+          />
+        </van-cell-group>
+
       </group>
-      <!-- <x-address
-          title="车&nbsp;&nbsp;&nbsp;型"
-          :list='[]'
-          placeholder="请选择车型"
-          value-text-align='left'
-        >
-        </x-address> -->
+      
       <group>
         <x-input
-          title="手机号"
-          v-model='submitParams.phone.value'
+          title="手机号"          
+          v-model='phoneValue'
         >
+        <!-- v-model='submitParams.phone.value' -->
           <span
             slot="right"
             class="price_lock"
@@ -120,6 +145,11 @@
       </group>
 
     </div>
+
+
+
+
+
     <div class="five_step">
       <h3>妥妥运车，只需<span>5</span>步</h3>
       <div class="detail_step">
@@ -279,9 +309,15 @@
         ></a>
     </div>
     <Dialog :visible.sync='showDialogStyle' :priceResult='priceResult'></Dialog>
+     
   </div>
 </template>
 <script>
+
+import Vue from 'vue';
+import { Field } from 'vant';
+Vue.use(Field);
+
 import { globalData, api } from "api";
 import { config, getCascaderSelectedName } from "utils";
 
@@ -297,9 +333,11 @@ import {
   ChinaAddressData
 } from "vux";
 import Dialog from "./Dialog.vue";
+import Popup from './Popup.vue';
 import { navList, six_goods, common_issues } from "./dict.js";
+
 const { getCarStyle } = globalData;
-const { getPriceResult } = api;
+const { submitOrder,getPriceResult } = api;
 const { hotline } = config;
 
 export default {
@@ -313,10 +351,21 @@ export default {
     PopupPicker,
     XAddress,
     Group,
-    Dialog
+    Dialog,
+    Popup
   },
   data() {
     return {
+      showPicker: false,
+      dshowPicker: false,
+      value:'',   // 始发地
+      valueName:'',
+      dvalue:'',  // 目的地
+      dvalueName:'',
+      extractCount:'', // 运车数量
+      phoneValue:'',
+
+
       carBoss: false,
       navList,
       six_goods,
@@ -328,11 +377,11 @@ export default {
       priceResult:{},
       submitParams: {
         departurePlace: {
-          value: [],
+          value:[],
           message: "请选择始发地"
         },
         destination: {
-          value: [],
+          value:[],
           message: "请选择目的地"
         },
         brandId: {
@@ -388,10 +437,30 @@ export default {
           img: require("./img/third.png")
           // title: "送你一次旅行",
         }
-      ]
+      ],
+      
     };
   },
   methods: {
+
+    // 选择始发地
+    departurePlace(city) {
+      let {name,valueName} = city
+      this.showPicker = false;
+      this.value = name;
+      this.valueName = valueName;
+      // console.log(this.value,this.valueName)
+    },
+    // 选择目的地
+    destination(city) {
+      let {name,valueName} = city
+      this.dshowPicker = false;
+      this.dvalue = name;
+      this.dvalueName = valueName;
+      // console.log(this.dvalue,this.dvalueName)
+    },
+
+
     carChange(val) {
       //   console.log(val);
     },
@@ -409,43 +478,65 @@ export default {
         position: "middle"
       });
     },
+
+    // 查询价格执行的方法
     quiryPrice() {
 
-      let params = this.submitParams;
-      let fields = {};
-      for (let key in params) {
-        fields[key] = params[key].value;
-        if (params[key].value.length === 0) {
-          this.$vux.toast.show({
-            text: params[key].message,
-            type: "text",
-            position: "top",
-            width: "auto"
-          });
-          return;
-          break;
-        }
+      //let params = this.submitParams;  // 整个数据对象
+      //let fields = {};  // 设置了一个空对象 字段
+
+      // 循环数据 让字段对象 属性名和属性值 等于 数据对象params
+      //for (let key in params) {
+        // fields[key] = params[key].value;
+
+        // // 判断 数据中的某一个没有传值  就弹框提示
+        // if (params[key].value.length === 0) {
+        //   this.$vux.toast.show({
+        //     text: params[key].message,
+        //     type: "text",
+        //     position: "top",
+        //     width: "auto"
+        //   });
+        //   return;
+        //   break;
+        // }
+      //}
+
+      // 始发地                  从级联选择器中获取选中项的显示文本
+      // fields["departurePlace"] = getCascaderSelectedName(
+        // this.addressList,       // data
+        // fields.departurePlace   // value
+      //);
+      // 目的地                从级联选择器中获取选中项的显示文本
+      // fields["destination"] = getCascaderSelectedName(
+        // this.addressList,
+        // fields.destination
+      //);
+      //                  从级联选择器中获取选中项的显示文本
+      // fields['brandId'] = getCascaderSelectedName(this.carStyle, fields.brandId)
+
+
+      let params = {
+        "extractCount":this.extractCount,
+        "departurePlaceId":this.valueName,
+        "destinationId": this.dvalueName,
+        "trafficPhone":this.phoneValue
       }
-      fields["departurePlace"] = getCascaderSelectedName(
-        this.addressList,
-        fields.departurePlace
-      );
-      fields["destination"] = getCascaderSelectedName(
-        this.addressList,
-        fields.destination
-      );
-      fields['brandId'] = getCascaderSelectedName(this.carStyle, fields.brandId)
-      getPriceResult(fields).then((res) => {
+
+      // 下单
+      submitOrder(params)
+      // 获取报价
+      getPriceResult(params).then((res) => {
+          // debugger
           if(res.success){
+            // 如果成功，就把返回值 传递给 弹框组件显示
             this.priceResult = {
-              start: fields.departurePlace[0],
-              end: fields.destination[0],
-              phone: fields.phone,
-              // style: fields.brandId.join(''),
-              style: fields.brandId.join(''),
-              fee: res.data.fee.toFixed(2),
+              start: res.data.originMunicipality,
+              end: res.data.destinationMunicipality,
+              phone: this.phoneValue,
+              style: res.data.carCondition,
+              fee: res.data.offer.toFixed(2),
             }
-            // console.log(this.priceResult)
             this.showDialogStyle = true;
           }else{
               this.$vux.toast.show({
@@ -466,6 +557,16 @@ export default {
         this.carStyle = res.list;
       }
     });
+  },
+  watch:{
+    showDialogStyle(newVal){
+      if(!newVal){
+        this.extractCount=''
+        this.value=''
+        this.dvalue=''
+        this.phoneValue=''
+      }
+    }
   }
 };
 </script>
@@ -587,6 +688,9 @@ export default {
       padding-left: 30px;
       border-left: 1px solid @f_c_2;
       /* height: 20px; */
+    }
+    .popup{
+      z-index: 99;
     }
   }
   .five_step {
