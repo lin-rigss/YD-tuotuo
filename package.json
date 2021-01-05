@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "async-validator": "^1.8.2",
-    "axios": "^0.16.2",
+    "axios": "^0.21.1",
     "better-scroll": "^1.12.4",
     "daycaca": "^1.0.6",
     "fastclick": "^1.0.6",
